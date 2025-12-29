@@ -1,6 +1,7 @@
 from pydantic import BaseModel , Field , EmailStr 
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 
 #User Schemas
 class UserCreate(BaseModel):
@@ -17,10 +18,11 @@ class UserOut(BaseModel):
     username: str
     email: EmailStr
     role: str
-    created_at: str
+    created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+    "from_attributes": True 
+    }
 
 #Token Schemas
 class Token(BaseModel):
@@ -31,6 +33,8 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     user_id : Optional[str] = None
     role : Optional[str] = None
+
+
 
 #Option Schemas
 class OptionBase(BaseModel):
@@ -43,8 +47,9 @@ class Option(OptionBase):
     id: UUID
     poll_id: UUID
     votes : int = 0
-    class Config:
-        orm_mode = True
+    model_config = {
+    "from_attributes": True 
+    }
 
 #Poll Schemas
 class PollBase(BaseModel):
@@ -56,14 +61,15 @@ class PollCreate(PollBase):
 
 class Poll(PollBase):
     id: UUID
-    created_at: str
+    created_at: datetime
     likes: int = Field(..., alias="likes_count")
     created_by: str
     options: List[Option] = []
 
-    class Config:
-        orm_mode = True
-        allow_population_by_field_name = True 
+    model_config = {
+    "from_attributes": True ,
+    "populate_by_name": True
+    }
 
 #Vote Schemas
 class VoteCreate(BaseModel):

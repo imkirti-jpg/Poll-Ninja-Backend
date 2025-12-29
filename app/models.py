@@ -6,6 +6,7 @@ from app.db import Base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import Mapped, mapped_column
 
 class User(Base):
     __tablename__ = "users"
@@ -36,7 +37,7 @@ class Poll(Base):
         server_default=func.now(),
         nullable=False  
     )
-    likes_counts = Column(Integer, default=0)
+    likes_count = Column(Integer, default=0)  
     created_by = Column(String , nullable=False) #change later for FK to users
 
     options = relationship("Option" , back_populates="poll" , cascade="all, delete-orphan")

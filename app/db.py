@@ -20,7 +20,7 @@ engine = create_engine(
     pool_size=5,          # number of persistent connections
     max_overflow=10,      # extra connections for bursts
     pool_timeout=30,
-    pool_recycle=1800,    # reconnect every 30 mins
+    pool_recycle=1800,
     
 )
 

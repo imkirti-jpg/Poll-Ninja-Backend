@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app import db
 from app.db import get_db
 from app import models, schema
 from app.utils.dependencies import get_current_user  
@@ -34,11 +35,13 @@ async def cast_vote(vote: schema.VoteCreate, db: Session = Depends(get_db), curr
         user_id = current_user.id
     )
 
+    db.add(db_vote)
+    db.commit()
+    db.refresh(db_vote)
+
     await broadcast_vote_update(str(vote.poll_id))
 
     return vote
-
-
 @routers.get("/users/{poll_id}")
 def get_user_vote(
     poll_id: str,

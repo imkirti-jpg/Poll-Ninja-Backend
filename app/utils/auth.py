@@ -5,6 +5,9 @@ from jose import jwt
 import os
 from datetime import timezone
 from typing import Optional
+from fastapi import HTTPException, status
+from jose import JWTError
+
 
 # Secret key for JWT
 # 🔐 Read from environment variables, with a fallback
@@ -40,5 +43,8 @@ def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except Exception:
-        return None
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+        )

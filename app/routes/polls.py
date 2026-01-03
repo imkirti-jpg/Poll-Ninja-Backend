@@ -5,6 +5,8 @@ from app.schema import PollCreate, Poll, PollBase
 from app import models , schema
 from app.utils.dependencies import get_current_user
 from datetime import datetime
+from app.utils.dependencies import check_admin_role
+from uuid import UUID
 
 import asyncio
 import json
@@ -16,8 +18,11 @@ routers = APIRouter()
 
 #Create a poll 
 @routers.post("/", response_model=schema.Poll)
-async def create_poll(poll: schema.PollCreate , db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    db_poll = models.Poll(title=poll.title, description=poll.description , likes_count=0, created_by=current_user.username)
+async def create_poll(poll: schema.PollCreate ,  
+                    db: Session = Depends(get_db),  
+                    admin_user: models.User = Depends(check_admin_role),
+                    ):
+    db_poll = models.Poll(title=poll.title, description=poll.description , likes_count=0, created_by=admin_user.username)
     db.add(db_poll)
     db.commit()
     db.refresh(db_poll)
@@ -55,7 +60,7 @@ async def create_poll(poll: schema.PollCreate , db: Session = Depends(get_db), c
 
 # Delete a poll
 @routers.delete("/{poll_id}")
-async def delete_poll(poll_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+async def delete_poll(poll_id: UUID, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
 
     #find poll
     db_poll = db.query(models.Poll).filter(models.Poll.id == poll_id).first()

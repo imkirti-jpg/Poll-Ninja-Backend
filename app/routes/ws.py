@@ -23,7 +23,7 @@ async def get_redis():
     if redis_client is None:
         try:
             redis_client = redis.from_url(redis_url , encoding="utf-8", decode_responses=True)
-            await redis_client.ping()
+            await redis_client.ping() 
             print("Connected to Redis")
         except Exception as e:
             print(f"Failed to connect to Redis: {e}") 

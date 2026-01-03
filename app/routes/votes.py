@@ -42,6 +42,7 @@ async def cast_vote(vote: schema.VoteCreate, db: Session = Depends(get_db), curr
     await broadcast_vote_update(str(vote.poll_id))
 
     return vote
+
 @routers.get("/users/{poll_id}")
 def get_user_vote(
     poll_id: str,

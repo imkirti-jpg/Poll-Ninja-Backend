@@ -20,7 +20,7 @@ routers = APIRouter()
 @routers.post("/", response_model=schema.Poll)
 async def create_poll(poll: schema.PollCreate ,  
                     db: Session = Depends(get_db),  
-                    admin_user: models.User = Depends(check_admin_role),
+                    admin_user: models.User = Depends(get_current_user),
                     ):
     db_poll = models.Poll(title=poll.title, description=poll.description , likes_count=0, created_by=admin_user.username)
     db.add(db_poll)

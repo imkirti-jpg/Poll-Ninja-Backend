@@ -13,6 +13,7 @@ if not DATABASE_URL:
     raise ValueError("DATABASE_URL environment variable is not set")
 
 
+
 # it creates a SQLAlchemy Engine instance
 engine = create_engine(
     DATABASE_URL,
@@ -45,3 +46,6 @@ def get_db():
 Base.metadata.create_all(bind=engine)
 
 
+import os
+
+REDIS_ENABLED = os.getenv("REDIS_ENABLED", "false").lower() == "true"

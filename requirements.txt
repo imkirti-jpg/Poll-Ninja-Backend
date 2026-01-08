@@ -42,3 +42,12 @@ uvicorn
 sqlalchemy
 psycopg2-binary
 python-dotenv
+email-validator
+boto3
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-jose
+passlib
+python-dotenv

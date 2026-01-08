@@ -50,6 +50,6 @@ import os
 
 REDIS_ENABLED = os.getenv("REDIS_ENABLED", "false").lower() == "true"
 
-
+from app.models import Vote, Poll, User, Like , Option
 
 Base.metadata.create_all(bind=engine)

@@ -53,4 +53,4 @@ passlib
 python-dotenv
 python-jose[cryptography]
 python-jose==3.3.0
-redis==4.7.2
+redis== 7.0.0

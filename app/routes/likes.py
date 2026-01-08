@@ -28,12 +28,15 @@ async def toggle_like(
 
     if existing_like:
         db.delete(existing_like)
-        poll.likes_count = max(0, (poll.likes_count or 0) - 1)
+        # decrement likes_count safely
+        current = int(poll.likes_count) if poll.likes_count is not None else 0
+        poll.likes_count = max(0, current - 1)
         like_status = False
     else:
         new_like = models.Like(id=str(uuid4()), poll_id=poll_id, user_id=current_user.id)
         db.add(new_like)
-        poll.likes_count = (poll.likes_count or 0) + 1
+        current = int(poll.likes_count) if poll.likes_count is not None else 0
+        poll.likes_count = current + 1
         like_status = True
 
     db.commit()
@@ -53,14 +56,19 @@ def get_user_like(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    liked = (
-        db.query(models.Like)
-        .filter(models.Like.poll_id == poll_id, models.Like.user_id == current_user.id)
-        .first()
-        is not None
-    )
+    liked = db.query(models.Like).filter(models.Like.poll_id == poll_id, models.Like.user_id == current_user.id).first() is not None
 
     poll = db.query(models.Poll).filter(models.Poll.id == poll_id).first()
     likes_count = poll.likes_count if poll else 0
 
     return {"liked": liked, "likes": likes_count}
+
+
+@router.get("/users/all/likes")
+def get_all_user_likes(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Get all user's likes across all polls in one request."""
+    likes = db.query(models.Like).filter(models.Like.user_id == current_user.id).all()
+    return {str(like.poll_id): True for like in likes}

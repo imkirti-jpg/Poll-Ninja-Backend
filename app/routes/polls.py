@@ -43,6 +43,7 @@ async def create_poll(poll: schema.PollCreate ,
         "created_at": db_poll.created_at.isoformat() if isinstance(db_poll.created_at, datetime) else str(db_poll.created_at),
         "created_by": db_poll.created_by,
         "likes_count": db_poll.likes_count or 0,
+        "likes": db_poll.likes_count or 0,
         "options": [
             {"id": str(o.id), "poll_id": str(o.poll_id), "text": o.text, "votes": 0}
             for o in db_poll.options
@@ -95,12 +96,46 @@ async def delete_poll(poll_id: UUID, db: Session = Depends(get_db), current_user
 
 
 # Get All Polls (with votes)
+@routers.get("/", response_model=list[schema.Poll])
+def list_polls(db: Session = Depends(get_db)):
+    polls = db.query(models.Poll).order_by(models.Poll.created_at.desc()).all()
+    result = []
+    for poll in polls:
+        options_data = []
+        for option in poll.options:
+            votes_count = db.query(models.Vote).filter(models.Vote.option_id == option.id).count()
+            options_data.append({
+                "id": str(option.id),
+                "poll_id": str(option.poll_id),
+                "text": option.text,
+                "votes": votes_count,
+            })
+
+        like_count = db.query(models.Like).filter(models.Like.poll_id == poll.id).count()
+
+        poll_data = {
+            "id": str(poll.id),
+            "title": poll.title,
+            "description": poll.description,
+            "created_at": poll.created_at,
+            "created_by": poll.created_by,
+            "likes_count": like_count,
+            "likes": like_count,
+            "options": options_data,
+        }
+
+        result.append(poll_data)
+
+    return result
+
+
+# Get polls (with votes)
 @routers.get("/{poll_id}", response_model=schema.Poll)
-def get_polls(poll_id : str ,db: Session = Depends(get_db)):
+def get_polls(poll_id: str, db: Session = Depends(get_db)):
     poll = db.query(models.Poll).filter(models.Poll.id == poll_id).first()
     if not poll:
         raise HTTPException(status_code=404, detail="Poll not found")
-    
+
     options_data = []
     for option in poll.options:
         votes_count = db.query(models.Vote).filter(models.Vote.option_id == option.id).count()
@@ -108,18 +143,19 @@ def get_polls(poll_id : str ,db: Session = Depends(get_db)):
             "id": str(option.id),
             "poll_id": str(option.poll_id),
             "text": option.text,
-            "votes": votes_count
+            "votes": votes_count,
         })
 
     like_count = db.query(models.Like).filter(models.Like.poll_id == poll.id).count()
-    
+
     poll_data = {
-        "id": poll.id,
+        "id": str(poll.id),
         "title": poll.title,
         "description": poll.description,
         "created_at": poll.created_at,
         "created_by": poll.created_by,
         "likes_count": like_count,
+        "likes": like_count,
         "options": options_data,
     }
 

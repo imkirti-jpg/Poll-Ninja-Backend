@@ -61,3 +61,12 @@ def get_user_vote(
         "voted": True,
         "option_id": existing_vote.option_id
     }
+
+@routers.get("/users/all/votes")
+def get_all_user_votes(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Get all user's votes across all polls in one request."""
+    votes = db.query(models.Vote).filter(models.Vote.user_id == current_user.id).all()
+    return {vote.poll_id: {"option_id": str(vote.option_id), "voted": True} for vote in votes}

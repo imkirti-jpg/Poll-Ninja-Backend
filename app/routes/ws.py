@@ -42,11 +42,13 @@ async def broadcast_vote_update(poll_id: str):
             count = db.query(models.Vote).filter(models.Vote.option_id == opt.id).count()
             payload.append({"option_id": str(opt.id), "text": opt.text, "votes": count})
 
-        message = {"poll_id": str(poll_id), "options": payload}
+        message = {"type": "vote_update", "poll_id": str(poll_id), "options": payload}
 
         redis_conn = await get_redis()
         if redis_conn:
+            # Broadcast to both poll-specific and global channels
             await redis_conn.publish(f"poll:{poll_id}", json.dumps(message))
+            await redis_conn.publish("polls:global", json.dumps(message))
             print(f"Published vote update for poll {poll_id} to Redis")
 
         else:
@@ -76,7 +78,9 @@ async def broadcast_like_update(poll_id: str):
 
         redis_conn = await get_redis()
         if redis_conn:
+            # Broadcast to both poll-specific and global channels
             await redis_conn.publish(f"poll:{poll_id}", json.dumps(message))
+            await redis_conn.publish("polls:global", json.dumps(message))
             print(f"Published like update for poll {poll_id} to Redis")
 
         else:

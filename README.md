@@ -156,60 +156,6 @@ Tokens expire after 1 hour. The token payload contains `user_id`, `username`, an
 
 Note: WebSocket paths reflect the router prefix (`/ws`) combined with endpoint paths (`/ws/poll`).
 
-### Message Types
-
-**New Poll:**
-```json
-{
-  "type": "new_poll",
-  "id": "uuid",
-  "title": "Question?",
-  "description": "Optional description",
-  "created_at": "2024-01-01T00:00:00",
-  "created_by": "username",
-  "likes_count": 0,
-  "options": [{"id": "uuid", "poll_id": "uuid", "text": "Option", "votes": 0}]
-}
-```
-
-**Poll Deletion:**
-```json
-{
-  "type": "delete_poll",
-  "poll_id": "uuid"
-}
-```
-
-**Vote Update:**
-```json
-{
-  "type": "vote_update",
-  "poll_id": "uuid",
-  "options": [{"option_id": "uuid", "text": "Option", "votes": 5}]
-}
-```
-
-**Like Update:**
-```json
-{
-  "type": "like_update",
-  "poll_id": "uuid",
-  "likes": 10
-}
-```
-
-### Architecture
-
-When Redis is enabled:
-1. WebSocket connections subscribe to Redis pub/sub channels
-2. API operations publish messages to Redis channels (`polls:global` or `poll:{poll_id}`)
-3. Redis broadcasts messages to all subscribed WebSocket clients
-
-When Redis is disabled (REDIS_URL not set or connection fails):
-1. Poll-specific WebSocket connections are stored in-memory (`active_connections` dict)
-2. API operations send messages directly to connected clients via `active_connections` (broadcast functions check for Redis and fall back to in-memory connections)
-3. Limited to single instance (not scalable across multiple server instances)
-4. Global channel (`/ws/ws/poll`) requires Redis pub/sub and will not receive updates without it (WebSocket handler enters sleep loop when Redis unavailable)
 
 ## Database Models
 

@@ -1,6 +1,8 @@
 # PollNinja Backend
 
 A FastAPI-based polling system with real-time updates. Users can create polls, vote on options, like polls, and receive live updates via WebSockets powered by Redis pub/sub.
+## Demo 
+https://poll-ninja-backend.onrender.com/docs
 
 ## Features
 

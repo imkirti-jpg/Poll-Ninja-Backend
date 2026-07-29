@@ -1,6 +1,7 @@
 import os
 import asyncio
 import json
+import time
 import redis.asyncio as redis
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.db import  get_db , sessionlocal
@@ -108,12 +109,12 @@ async def websocket_all_polls(websocket : WebSocket):
     try:
         if pubsub:
             async for message in pubsub.listen():
-                if message and message['type'] == 'message':
+                if message['type'] != 'message':
                     data = json.loads(message['data'])
+                    
                     await websocket.send_json(data)
                 else:
-                    while True:
-                        await asyncio.sleep(15)
+                    continue
 
     except WebSocketDisconnect:
         if pubsub:
@@ -143,12 +144,11 @@ async def websocket_poll_update(websocket: WebSocket, poll_id: str):
     try:
         if pubsub:
             async for message in pubsub.listen():
-                if message and message['type'] == 'message':
+                if message['type'] != 'message':
                     data = json.loads(message['data'])
                     await websocket.send_json(json.loads(message["data"]))
                 else:
-                    while True:
-                        await asyncio.sleep(15)
+                    continue
 
     except WebSocketDisconnect:
         active_connections[poll_id].remove(websocket)
